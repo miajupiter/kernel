@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Mia Kernel</title>
+	<link id="favicon" href="img/web-icon.png" rel="shortcut icon" type="image/png">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+	<script src="vendor/js/jquery.v3.4.1.min.js"></script>
+	
+	<link rel="stylesheet" href="./css/main.css">
+	<style>
+		textarea {
+			font-family: monospace;
+		}
+	</style>
+</head>
+<body class="">
+	<div class="container mx-5 mt-4">
+		<div class="row justify-content-center align-items-center g-2">
+			<div class="col">
+				<h1 class="text-light">Mia Kernel Test Page</h1>
+			</div>
+			<div class="col">
+				<a href="aban.html" class="btn btn-secondary">
+					<i class="fa-solid fa-bug"></i>
+					<i class="fa-solid fa-spider"></i>
+					Abanalım 
+					
+					<i class="fa-solid fa-mosquito"></i>
+					<i class="fa-solid fa-viruses"></i>
+					<i class="fa-solid fa-virus"></i>
+				</a>
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="col-md-6">
+				<div class="mb-3">
+					<label for="socketService" class="form-label text-light">Soket</label>
+					<input class="form-control" id="socketService" type="text" placeholder="socketService" aria-label="" value="">
+				</div>
+			</div>
+		
+			<div class="col-md-12">
+				<div class="mb-3">
+					<a href="javascript:setsocketService()" class="btn btn-success">Set Socket Servis</a>
+					<a href="javascript:startSocket()" class="btn btn-primary">startSocket</a>
+					
+				</div>
+			</div>
+
+			
+		</div>
+		<div class="row">
+			<div class="col-md-4">
+				<input class="form-control" id="txtMongoId" type="text" placeholder="mongodb object id" aria-label="" value="64811304144714c221b52c4d">
+			</div>
+			<div class="col">
+				<a href="javascript:newId()" class="btn btn-primary">newId</a>
+			</div>
+		</div>
+		<div class="card bg-dark text-light border mt-3">
+			<div class="card-header bg-primary text-light d-flex justify-content-between align-items-center">
+				<h3>Kernel WebSocket Testing</h3>
+				<a class=" btn-collapse collapsed fs-125" data-bs-toggle="collapse" href="#card-stats" role="button" aria-expanded="false" aria-controls="card-stats">
+					<i class="fas fa-caret-up text-light"></i>
+				</a>
+			</div>
+			<div id="card-stats" class="card-body card-collapse collapse">
+				<div class="row">
+					<div class="col-md-6">
+						<div class="mb-3">
+							<label for="event-name" class="form-label">Socket Event</label>
+							<input class="form-control" id="event-name" type="text" placeholder="socket event" aria-label="">
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<div class="mb-3 w-50">
+							<label for="event-params" class="form-label">Options</label>
+							<textarea class="form-control" id="event-params" rows="6" aria-label="" onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+' '.repeat(4) +v.substring(e);this.selectionStart=this.selectionEnd=s+4;return false;}"></textarea>
+						</div>
+						<div class="mb-3 w-100">
+							<a href="javascript:socketSend()" class="btn btn-primary">socket.send</a>
+					<a href="javascript:durdur()" class="btn btn-light ms-4">Stop</a>
+							
+						</div>
+					</div>
+				</div>
+				
+				<div class="card-footer">
+					<label for="result" class="form-label">Result</label>
+							<textarea class="form-control" id="result" rows="12" aria-label=""></textarea>
+				</div>
+			</div>
+
+		</div>
+
+
+		<script src="vendor/js/bootstrap.bundle.v5.1.0.min.js"></script>
+		<script src="js/script.js"></script>
+		<script type="text/javascript">
+
+			var accessToken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NDhhYTkwZGY4NGEyMjRmYTAwM2NlYmYiLCJpYXQiOjE2ODY4MDg4NDUsImV4cCI6MTc3MzIwODg0NX0.o1pruKwH0Cnlhj0t_mGlleIjNBYTRWzUVouo_Vtoagg'
+
+			function UUIDGeneratorBrowser(){
+  			return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>{
+					return c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4))).toString(16)
+				})
+			}
+
+			function setsocketService(){
+				
+				localStorage.setItem('socketService',$('#socketService').val().trim() || 'ws://localhost:7701')
+				localStorage.setItem('event-name',$('#event-name').val() || 'dataLog')
+				localStorage.setItem('event-params',$('#event-params').val())
+				//window.location.reload()
+			}
+			var socket=null
+
+			function startSocket(){
+				const socketService=$('#socketService').val()
+				
+
+				socket = new WebSocket(`${socketService}`, 'echo-protocol')
+				
+
+				socket.onerror = function(err) {
+						console.log('Connection Error', err)
+				}
+
+				socket.onopen = function() {
+						console.log('WebSocket Client Connected')
+						socket.send(JSON.stringify({ event: 'subscribe', token:accessToken }))
+				}
+
+				socket.onclose = function() {
+						console.log('echo-protocol Client Closed')
+				}
+
+				socket.onmessage = function(rawData) {
+					if (rawData) {
+							try {
+								let data = JSON.parse(rawData.data.toString())
+								if (data.event=='subscribed') {
+									runSubscribed(data)
+								}else if (data.event=='dataLog') {
+									console.log('EndTime: ', new Date().toISOString().replace(/T/g, ' ').split('.')[0])
+									$('#result').val(`${JSON.stringify(data,null,2)}`)
+									
+								}else{
+									console.log('onmessage data: ', data)
+								}
+							} catch (err) {
+								console.log('EndTime: ', new Date().toISOString().replace(/T/g, ' ').split('.')[0])
+								console.log('error onmessage', err)
+							}
+					}
+				}
+
+			}
+			
+			function runSubscribed(data) {
+				console.log('runSubscribed', data)
+			}
+
+			function socketSend(){
+				if(!socket){
+					$('#result').val('socket is not connected')
+					return
+				}
+				console.log('StartTime: ', new Date().toISOString().replace(/T/g, ' ').split('.')[0])
+				try{
+					const callback = $('#event-name').val() + `-${UUIDGeneratorBrowser()}`
+					let params=JSON.parse($('#event-params').val())
+					params.event=$('#event-name').val()
+					params.callback=callback
+					
+					socket.send(JSON.stringify(params))
+				}catch (err) {
+					console.log('socketSend error:', err)
+				}
+				
+			}
+
+			async function durdur() {
+				if(socket){
+					await socket.close(3500,'deneme closing')
+				}else{
+					$('#result').val('socket has been already closed')
+				}
+				
+			}
+
+			$(document).ready(function () {
+				if(!localStorage.getItem('socketService')){
+					localStorage.setItem('socketService','wss://ws.fxtest.site')
+				}
+				$('#socketService').val(localStorage.getItem('socketService'))
+				
+
+				if (localStorage.getItem('event-name')) {
+					$('#event-name').val(localStorage.getItem('event-name'))
+				}
+
+				if (localStorage.getItem('event-params')) {
+					$('#event-params').val(localStorage.getItem('event-params'))
+				} else {
+					let defaultOpt = {
+						page: 1,
+						pageSize:10,
+						filter:{transferred:false},
+						data:null,
+					}
+					$('#event-params').val(JSON.stringify(defaultOpt, null, 4))
+				}
+			})
+
+			const zzNumbers='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-~'
+			const basamak0=1
+			const basamak1=64
+			const basamak2=64*64
+			const basamak3=64*64*64
+			// for(let i=65;i<=90;i++) {
+			// 	zzNumbers += String.fromCharCode(i)
+			// }
+			// for(let i=97;i<=122;i++) {
+			// 	zzNumbers += String.fromCharCode(i)
+			// }
+
+			// console.log(zzNumbers.length)
+
+			function newId(){
+				let s=$('#txtMongoId').val()
+				if(s.length !=24) return
+
+				let mongoId=[
+					`0x${s.substring(0,6)}`,
+					`0x${s.substring(6,12)}`,
+					`0x${s.substring(12,18)}`,
+					`0x${s.substring(18,24)}`,
+				]
+				let zzgoId=[]
+				console.log(mongoId)
+
+				mongoId.forEach(e=>{
+					let a=Number(e)
+					let zz3=0, zz2=0, zz1=0, zz0=0
+					zz3=Math.floor(a/basamak3)
+					a=a-zz3*basamak3
+
+					zz2=Math.floor(a/basamak2)
+					a=a-zz2*basamak2
+
+					zz1=Math.floor(a/basamak1)
+
+					a=a-zz1*basamak1
+
+					zz0=Math.floor(a/basamak0)
+
+					zzgoId.push(`${zzNumbers[zz3]}${zzNumbers[zz2]}${zzNumbers[zz1]}${zzNumbers[zz0]}`)
+				})
+				console.log(`zzgoId:`,zzgoId)
+				
+			}
+		</script>
+
+</body>
+
+</html>

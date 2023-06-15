@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>MiaKernel - ABAN</title>
+	<link id="favicon" href="img/web-icon.png" rel="shortcut icon" type="image/png">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+	<script src="vendor/js/jquery.v3.4.1.min.js"></script>
+	<!-- <script src="vendor/js/jquery-ui.v1.12.1.min.js"></script> -->
+	<script type="text/javascript" src="vendor/js/socket.io.js"></script>
+
+	<link rel="stylesheet" href="./css/main.css">
+	<style>
+		textarea {
+			font-family: monospace;
+		}
+	</style>
+</head>
+<body class="">
+	<div class="container mx-5">
+		<h1 class="text-light">
+			<i class="fa-solid fa-bug"></i>
+			<i class="fa-solid fa-spider"></i>
+			MiaKernel Socket Abanma sayfasi
+			<i class="fa-solid fa-mosquito"></i>
+			<i class="fa-solid fa-viruses"></i>
+			<i class="fa-solid fa-virus"></i>
+		</h1>
+		<div class="row">
+			<div class="col-md-6">
+				<div class="form-floating mb-3">
+					<input type="text" class="form-control" name="socketService" id="socketService" placeholder=" ">
+					<label for="socketService">socketService Url</label>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="form-floating mb-3">
+					<input type="text" class="form-control" id="totalProcess" placeholder=" " value="0">
+					<label for="totalProcess">TotalProcess</label>
+				</div>
+			</div>
+		</div>
+		<div class="row align-items-center">
+			<div class="col-md-6">
+				<div class="form-floating mb-3">
+					<input type="text" class="form-control" name="symbolList" id="symbolList" placeholder=" ">
+					<label for="symbolList">Symbols</label>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="form-floating mb-3">
+					<input type="text" class="form-control" name="tekrar" id="tekrar" placeholder=" " value="1">
+					<label for="tekrar">Repeat</label>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="mb-3">
+					<a href="javascript:abanSocket()" id="btnAban" class="btn btn-primary">Aban Socket</a>
+				</div>
+			</div>
+		</div>
+		<div id="result" class="w-100">
+
+		</div>
+	</div>
+
+
+
+	<script src="vendor/js/bootstrap.bundle.v5.1.0.min.js"></script>
+	<script src="js/script.js"></script>
+
+	<script type="text/javascript">
+		var totalProcess = 0
+		function saveLocalStorage() {
+			localStorage.setItem('socketService', $('#socketService').val())
+			localStorage.setItem('symbolList', $('#symbolList').val())
+			localStorage.setItem('tekrar', $('#tekrar').val())
+		}
+		function loadLocalStorage() {
+			$('#socketService').val(localStorage.getItem('socketService') || 'wss://ws.fxtest.site')
+			$('#symbolList').val(localStorage.getItem('symbolList') || 'BTCUSD, ETHEUR, ADAUSD, NZDUSD, GOLD, SILVER')
+			$('#tekrar').val(localStorage.getItem('tekrar') || '20')
+		}
+		function abanSocket() {
+			$('#btnAban').addClass('disabled')
+			saveLocalStorage()
+
+			let repeat = $('#tekrar').val()
+			let symbolList = []
+			$('#symbolList').val().split(',').forEach(e => {
+				if (e.trim() != '') {
+					symbolList.push(e.trim())
+				}
+			})
+			let zaman = new Date().toISOString().substr(11, 8)
+			let i = 0
+			function calistirTekrar(cb) {
+				if (i >= repeat)
+					return cb()
+				let id = `r${i + 1}${zaman.replaceAll(':', '')}`
+				let symbolListDiv = ``
+				symbolList.forEach(e => {
+					symbolListDiv += `
+						<div id="${e}" class="row">
+							<div class="col-md-4 form-floating mb-3">
+								<input type="text" class="form-control" id="currency" placeholder=" " value="">
+								<label for="currency">Currency</label>
+							</div>
+							<div class="col-md-4 form-floating mb-3">
+								<input type="text" class="form-control" id="time" placeholder=" " value="">
+								<label for="time">Time</label>
+							</div>
+							<div class="col-md-4 form-floating mb-3">
+								<input type="text" class="form-control" id="price" placeholder=" " value="">
+								<label for="price">Price</label>
+							</div>
+						</div>`
+				})
+				let s = `
+				<div id="sonuc${id}" class="card bg-dark border">
+					<div class="card-header bg-primary text-light d-flex justify-content-between align-items-center">
+						<h3>#${i + 1} StarTime ${zaman}</h3>
+						<a class="btn-collapse collapsed fs-125" data-bs-toggle="collapse" href="#card-rates${id}" role="button" aria-expanded="false" aria-controls="card-rates${id}">
+							<i class="fas fa-caret-up text-light"></i>
+						</a>
+					</div>
+					<div id="card-rates${id}" class="card-body card-collapse collapse">
+						<div id="serverTime"></div>
+						${symbolListDiv}
+					</div>
+
+				</div>
+				`
+				document.querySelector('#result').innerHTML += s
+
+				let symbolIndex = 0
+				function calistirSocket(cb2) {
+					if (symbolIndex >= symbolList.length)
+						return cb2()
+
+					startSocket(`#sonuc${id}`, symbolList[symbolIndex], () => {
+						symbolIndex++
+						setTimeout(calistirSocket, 100, cb2)
+					})
+				}
+
+				calistirSocket(() => {
+					i++
+					setTimeout(calistirTekrar, 1000, cb)
+				})
+			}
+
+			calistirTekrar(() => {
+				console.log('eklendi')
+				$('#btnAban').removeClass('disabled')
+			})
+
+		}
+
+		function startSocket(divId, symbol, cb) {
+			totalProcess++
+			$('#totalProcess').val(totalProcess)
+			let socketService = $('#socketService').val()
+			let apiKey = 'ABANTEST_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lcklkIjoiNmNkNTI2ODctZGIyMC00ZjA3LThlMWMtMjQ3NWE1OTI3Zjg5IiwiY3VzdG9tZXIiOiJ0cmFkZTEiLCJleHBpcmVEYXRlIjoiMjAyOC0wMS0yMyAwMDowMDowMCIsInRyaWFsIjoiZmFsc2UiLCJhZG1pbiI6ImZhbHNlIiwidXNlcklkIjoiIiwidXNlck5hbWUiOiIiLCJmaXJzdE5hbWUiOiIiLCJsYXN0TmFtZSI6IiIsImV4cCI6MTgzMjE4NzYwMH0.U6V0sFfdlho6kQLXRDTn8EE_7NU10nE1y82LEjr28zk'
+			var socket = io(socketService,
+				{
+					reconnection: true,
+			   	reconnectionDelay: 1000,
+				   reconnectionDelayMax : 5000,
+				   reconnectionAttempts: Infinity
+				}
+			)
+
+			socket.on('connect', () => {
+				console.log(divId, `connected`)
+				socket.emit('subscribe', apiKey)
+			})
+
+			socket.on('error', (err) => {
+				console.log(divId, 'Hata:', err)
+			})
+
+			socket.on('time', (time) => {
+				if (document.querySelector(`${divId} #serverTime`)) {
+					document.querySelector(`${divId} #serverTime`).innerHTML = JSON.stringify(time)
+				}
+			})
+
+			socket.on('ping', () => socket.emit('pong'))
+			socket.on('pong', () => { })
+
+			socket.on('subscribed', (msg) => {
+				console.log(divId, msg)
+				socket.emit('rates', symbol)
+				if (cb) cb()
+			})
+			socket.on('rates', (rates) => {
+				$(`${divId} #${symbol} #currency`).val(rates.currency)
+				$(`${divId} #${symbol} #time`).val(rates.time)
+				$(`${divId} #${symbol} #price`).val(rates.price)
+			})
+		}
+
+		$(document).ready(function () {
+			loadLocalStorage()
+		})
+	</script>
+</body>
+
+</html>

@@ -1,4 +1,4 @@
-module.exports = (sessionDoc, req) =>
+module.exports = (dbModel, sessionDoc, req) =>
 	new Promise(async (resolve, reject) => {
 		if (req.method === 'GET') {
       sessionDoc.populate({

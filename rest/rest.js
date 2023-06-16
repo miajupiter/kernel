@@ -8,7 +8,7 @@ var cookieParser = require('cookie-parser')
 var app = express()
 var cors = require('cors')
 
-module.exports = () => new Promise((resolve, reject) => {
+module.exports = () => new Promise(async (resolve, reject) => {
   app.use(cors())
   app.use(favicon(path.join(__root, '/resources/icon64.png')))
 
@@ -24,32 +24,15 @@ module.exports = () => new Promise((resolve, reject) => {
 
   app.use('/', express.static(path.join(__root, 'public')))
 
+  app.controllers={
+    auth: await util.moduleLoader(path.join(__dirname, '/controllers/auth'), '.controller.js'),
+    master: await util.moduleLoader(path.join(__dirname, '/controllers/master'), '.controller.js'),
+    repo:await util.moduleLoader(path.join(__dirname, '/controllers/repo'), '.controller.js'),
+    session:await util.moduleLoader(path.join(__dirname, '/controllers/session'), '.controller.js'),
+  }
 
-  testControllers(true)
-    .then(() => {
-      require('./routes')(app)
-     eventLog(`[RestAPI]`.cyan, 'started')
-      resolve(app)
-    })
-    .catch(reject)
-
+  require('./routes')(app)
+  resolve(app)
+  eventLog(`[RestAPI]`.cyan, 'started')
+  
 })
-
-
-
-/*
-  REST-API CONTROLLER TEST
-  Checking all controllers folders.
-*/
-function testControllers(log) {
-  return util.moduleLoader(path.join(__dirname, '/controllers/auth'), '.controller.js', (log ? `[RestAPI]`.cyan + ` auth controllers` : ''))
-    .then(() => {
-      return util.moduleLoader(path.join(__dirname, '/controllers/master'), '.controller.js', (log ? `[RestAPI]`.cyan + ` master controllers` : ''))
-    })
-    .then(() => {
-      return util.moduleLoader(path.join(__dirname, '/controllers/repo'), '.controller.js', (log ? `[RestAPI]`.cyan + ` repo controllers` : ''))
-    })
-    
-
-
-}

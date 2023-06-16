@@ -1,4 +1,3 @@
-const protectedFields = require('./protected-fields.json')
 const packageJson = require('../package.json')
 const auth = require('../lib/auth')
 const spamCheck = require('../lib/spam-detector')
@@ -16,7 +15,12 @@ module.exports = (app) => {
   })
 
   let apiWelcomeMessage = {
-    message: `Welcome to ${packageJson.name} API V1. Usage: /api/v1/:func/[:param1]/[:param2]/[:param3] . Methods: GET, POST, PUT, DELETE `,
+    message: [
+      `Welcome to ${packageJson.name} API V1.`,
+      `Usage: /api/v1/[auth | session | db | '']/:func/[:param1]/[:param2]/[:param3]`,
+      `Methods: GET, POST, PUT, DELETE.`,
+      `Documentation: ${process.env.RESTAPI_DOCUMENTATION_URI}`,
+    ].join('\n'),
     status: process.env.NODE_ENV || '',
   }
   app.all('/api', function (req, res) {
@@ -40,7 +44,7 @@ module.exports = (app) => {
   app.use((req, res, next) => {
     res.status(404).json({
       success: false,
-      error: { name: '404', message: 'function not found' },
+      error: 'Not found',
     })
   })
 
@@ -49,9 +53,37 @@ module.exports = (app) => {
   })
 }
 
+function authControllers(app, route) {
+  setRoutes(app, route, (req, res, next) => {
+    let spam = spamCheck(req.IP)
+    if (!spam) {
+      let ctl = getController(folder, req.params.func)
+      if (!ctl) return next()
+      ctl(req)
+        .then((data) => {
+          if (data == undefined) res.json({ success: true })
+          else if (data == null) res.json({ success: true })
+          else {
+            res.status(200).json({
+              success: true,
+              data: manipulateResponse(data),
+            })
+          }
+        })
+        .catch(next)
+    } else {
+      next({
+        name: 'AUTH_FAILED',
+        message: `Suspicious login attempts detected. Try again after ${spam} seconds.`,
+      })
+    }
+  })
+}
+
 function sessionControllers(app, route, folder) {
   setRoutes(app, route, (req, res, next) => {
-    console.log('params11', req.params)
+    if (app.controllers.session[req.params.func]) {
+    }
     let ctl = getController(folder, req.params.func)
     if (!ctl) return next()
     passport(req)
@@ -84,7 +116,9 @@ function repoControllers(app, route, folder) {
                 if (data == undefined) res.json({ success: true })
                 else if (data == null) res.json({ success: true })
                 else {
-                  res.status(200).json({ success: true, data: manipulateResponse(data) })
+                  res
+                    .status(200)
+                    .json({ success: true, data: manipulateResponse(data) })
                 }
               })
               .catch(next)
@@ -96,57 +130,30 @@ function repoControllers(app, route, folder) {
 }
 
 function masterControllers(app, route, folder) {
-	setRoutes(app, route, (req, res, next) => {
-		const ctl = getController(folder, req.params.func)
-		if (!ctl) return next()
-		let dbModel = db
-
-		passport(req)
-			.then((member) => {
-				ctl(member, dbModel, req)
-					.then((data) => {
-						if (data == undefined) res.json({ success: true })
-						else if (data == null) res.json({ success: true })
-						else {
-							res.status(200).json({
-								success: true,
-								data: manipulateResponse(data),
-							})
-              // res.status(200).json(manipulateResponse(data))
-						}
-					})
-					.catch(next)
-			})
-			.catch(err=>{
-        res.status(401).json({success:false,error:err})
-      })
-	})
-}
-
-function authControllers(app, route, folder) {
   setRoutes(app, route, (req, res, next) => {
-    let spam = spamCheck(req.IP)
-    if (!spam) {
-      let ctl = getController(folder, req.params.func)
-      if (!ctl) return next()
-      ctl(req)
-        .then((data) => {
-          if (data == undefined) res.json({ success: true })
-          else if (data == null) res.json({ success: true })
-          else {
-            res.status(200).json({
-              success: true,
-              data: manipulateResponse(data),
-            })
-          }
-        })
-        .catch(next)
-    } else {
-      next({
-        name: 'AUTH_FAILED',
-        message: `Suspicious login attempts detected. Try again after ${spam} seconds.`,
+    const ctl = getController(folder, req.params.func)
+    if (!ctl) return next()
+    let dbModel = db
+
+    passport(req)
+      .then((member) => {
+        ctl(member, dbModel, req)
+          .then((data) => {
+            if (data == undefined) res.json({ success: true })
+            else if (data == null) res.json({ success: true })
+            else {
+              res.status(200).json({
+                success: true,
+                data: manipulateResponse(data),
+              })
+              // res.status(200).json(manipulateResponse(data))
+            }
+          })
+          .catch(next)
       })
-    }
+      .catch((err) => {
+        res.status(401).json({ success: false, error: err })
+      })
   })
 }
 
@@ -189,8 +196,6 @@ function sendError(err, req, res) {
 
   res.status(statusCode).json(response)
 }
-
-
 
 function setRoutes(app, route, cb1, cb2) {
   let dizi = route.split('/:')
@@ -241,25 +246,25 @@ function passport(req) {
 }
 
 function manipulateResponse(obj) {
-	// if (obj != undefined) {
-	// 	if (obj.pagingCounter != undefined) delete obj.pagingCounter
+  // if (obj != undefined) {
+  // 	if (obj.pagingCounter != undefined) delete obj.pagingCounter
 
-	// 	if (obj.limit != undefined) {
-	// 		obj.pageSize = obj.limit
-	// 		delete obj.limit
-	// 	}
-	// 	if (obj.totalDocs != undefined) {
-	// 		obj.recordCount = obj.totalDocs
-	// 		// obj.totalCount = obj.totalDocs
-	// 		delete obj.totalDocs
-	// 	}
-	// 	if (obj.totalPages != undefined) {
-	// 		obj.pageCount = obj.totalPages
-	// 		delete obj.totalPages
-	// 	}
-    
-	// }
-	return obj
+  // 	if (obj.limit != undefined) {
+  // 		obj.pageSize = obj.limit
+  // 		delete obj.limit
+  // 	}
+  // 	if (obj.totalDocs != undefined) {
+  // 		obj.recordCount = obj.totalDocs
+  // 		// obj.totalCount = obj.totalDocs
+  // 		delete obj.totalDocs
+  // 	}
+  // 	if (obj.totalPages != undefined) {
+  // 		obj.pageCount = obj.totalPages
+  // 		delete obj.totalPages
+  // 	}
+
+  // }
+  return obj
 }
 
 global.restError = {

@@ -142,8 +142,9 @@
 						console.log('echo-protocol Client Closed')
 				}
 
-				socket.onmessage = function(rawData) {
+				socket.onmessage = function(rawData,ts) {
 					if (rawData) {
+						console.log('ts: ',ts)
 							try {
 								let data = JSON.parse(rawData.data.toString())
 								if (data.event=='subscribed') {

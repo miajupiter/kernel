@@ -138,23 +138,7 @@ function sendError(socket, err, callback) {
   socket.send(JSON.stringify(obj))
 }
 
-function sendSuccess(socket, event, data, callback) {
-    const obj = {
-      event: event,
-      success: true,
-      data: data,
-    }
-    if (callback) {
-      obj.callback = callback
-    }
-    socket.send(JSON.stringify(obj))
- 
-}
-
-
 // function sendSuccess(socket, event, data, callback) {
-
-//   if(event=='subscribed'){
 //     const obj = {
 //       event: event,
 //       success: true,
@@ -164,35 +148,50 @@ function sendSuccess(socket, event, data, callback) {
 //       obj.callback = callback
 //     }
 //     socket.send(JSON.stringify(obj))
+ 
+// }
 
-//   }else{
+
+function sendSuccess(socket, event, data, callback) {
+
+  // if(event=='subscribed'){
+    const obj = {
+      event: event,
+      success: true,
+      data: data,
+    }
+    if (callback) {
+      obj.callback = callback
+    }
+    socket.send(JSON.stringify(obj), new Date().getTime())
+
+  // }else{
     
-//     devLog(`[SendSuccess] data.totalDocs before: ${data.totalDocs}`)
-//     if(data.docs){
-//       for(let i=0;i<15;i++){
-//         let a=data.docs.concat(data.docs)
-//         data.docs=a
-//       }
-  
-//       data.totalDocs=data.docs.length
-//       devLog(`[SendSuccess] data.totalDocs: ${data.totalDocs}`)
-//     }
-//     const obj = {
-//       event: event,
-//       success: true,
-//       data: data,
-//     }
-//     if (callback) {
-//       obj.callback = callback
-//     }
-//     devLog(`[SendSuccess] before stringify`)
-//     let msg=JSON.stringify(obj)
-//     devLog(`[SendSuccess] after stringify, before send msg.length: ${msg.length}`)
+  //   devLog(`[SendSuccess] data.totalDocs before: ${data.totalDocs}`)
+  //   data.alitek='alitek79'
+  //   const obj = {
+  //     event: event,
+  //     success: true,
+  //     data: data,
+  //   }
+  //   if (callback) {
+  //     obj.callback = callback
+  //   }
+  //   devLog(`[SendSuccess] before stringify`)
+  //   // let msg=JSON.stringify(obj)
+    
+  //   // devLog(`[SendSuccess]:`,msg)
+    
+  //   // devLog(`[SendSuccess] after stringify, msg.length: ${msg.length}`)
+  //   // let lorem='loremipsum dolor sit amet, consect, sed do eiusmod tempor incididunt ut labore et, consectetur adipiscing elit, sed do eiusmod tempor inc'
+  //   // let msg2=msg.split('alitek79')[0] + lorem.repeat(10) + msg.split('alitek79')[1]
 
-//     socket.send(msg)
-//     devLog(`[SendSuccess] the end `, event, ' msg length:', msg.length)
-//   }
+  //   // devLog(`[SendSuccess] after stringify, before send msg2.length: ${msg2.length} , Size: , ${Math.round(msg2.length/1024/1024)} mb`)
+  //   // socket.send(msg2)
+  //   // devLog(`[SendSuccess] the end , ${event},  msg2 length: ${Math.round(msg2.length/1024/1024)} mb`)
+  //   socket.send(obj,new Date().getTime())
+  // }
  
 
   
-// }
+}

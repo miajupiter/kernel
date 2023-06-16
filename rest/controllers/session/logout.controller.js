@@ -1,4 +1,4 @@
-module.exports = (sessionDoc, req) =>
+module.exports = (dbModel, sessionDoc, req) =>
 	new Promise((resolve, reject) => {
 		if (req.method === 'POST') {
 			sessionDoc.closed = true

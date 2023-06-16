@@ -1,9 +1,8 @@
-module.exports = (sessionDoc, req) =>
+module.exports = (dbModel, sessionDoc, req) =>
 	new Promise(async (resolve, reject) => {
 		if (req.method === 'POST') {
 			let language = req.getValue('language')
 			let dbId = req.getValue('dbId')
-			console.log(`dbId`, dbId)
 			if (language) sessionDoc.language = language
 			if (dbId) {
 				try {

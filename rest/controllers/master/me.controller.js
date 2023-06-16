@@ -1,14 +1,14 @@
-module.exports = (member, req) => new Promise((resolve, reject) => {
+module.exports = (dbModel, sessionDoc, req) => new Promise((resolve, reject) => {
 	switch (req.method) {
 		case 'GET':
 			if(req.params.param1 == undefined || req.params.param1 == 'profile') {
 
-				getMyProfile(member, req).then(resolve).catch(reject)
+				getMyProfile(dbModel, sessionDoc, req).then(resolve).catch(reject)
 			} else if(req.params.param1 == 'notifications') {
 				if(req.params.param2 != undefined) {
-					getOneNotification(member, req).then(resolve).catch(reject)
+					getOneNotification(dbModel, sessionDoc, req).then(resolve).catch(reject)
 				} else {
-					getNotificationList(member, req).then(resolve).catch(reject)
+					getNotificationList(dbModel, sessionDoc, req).then(resolve).catch(reject)
 				}
 			} else {
 				restError.param1(req, reject)
@@ -17,7 +17,7 @@ module.exports = (member, req) => new Promise((resolve, reject) => {
 			break
 		case 'PUT':
 			if(req.params.param1 == undefined || req.params.param1 == 'profile') {
-				put(member, req).then(resolve).catch(reject)
+				put(dbModel, sessionDoc, req).then(resolve).catch(reject)
 			} else {
 				restError.param1(req, reject)
 			}
@@ -30,7 +30,7 @@ module.exports = (member, req) => new Promise((resolve, reject) => {
 })
 
 
-function getMyProfile(member, req) {
+function getMyProfile(dbModel, sessionDoc, req) {
 	return new Promise((resolve, reject) => {
 		db.members.findOne({ _id: member._id }).then(doc => {
 			if(dbnull(doc, reject)) {
@@ -47,7 +47,7 @@ function getMyProfile(member, req) {
 }
 
 
-function put(member, req) {
+function put(dbModel, sessionDoc, req) {
 	return new Promise((resolve, reject) => {
 		db.members.findOne({ _id: member._id }).then(doc => {
 				if(dbnull(doc, reject)) {
@@ -69,7 +69,7 @@ function put(member, req) {
 	})
 }
 
-function getNotificationList(member, req) {
+function getNotificationList(dbModel, sessionDoc, req) {
 	return new Promise((resolve, reject) => {
 		let options = {
 			page: (req.query.page || 1)
@@ -87,7 +87,7 @@ function getNotificationList(member, req) {
 	})
 }
 
-function getOneNotification(member, req) {
+function getOneNotification(dbModel, sessionDoc, req) {
 	return new Promise((resolve, reject) => {
 		db.notifications.findOne({ _id: req.params.param2, member: member._id }).then(resolve).catch(reject)
 	})

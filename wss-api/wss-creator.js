@@ -39,7 +39,6 @@ module.exports = function (options) {
       socket.callbackList = {}
       socket.clientId = null
       socket.clientSession = null
-
       socket.on('pong', () => moduleHolder.pong(socket))
 
       socket.on('message', (message) => {
@@ -49,12 +48,20 @@ module.exports = function (options) {
           if (data.callback && socket.callbackList[data.callback]) {
             socket.callbackList[data.callback](data)
           } else {
-            if(!['error','pong','subscribe'].includes(data.event) && !socket.subscribed){
-              socket.sendError('Authentication failed')
-            }else if (data.event && moduleHolder[data.event]) {
+            // if (
+            //   !['error', 'pong', 'subscribe'].includes(data.event) &&
+            //   !socket.subscribed
+            // ) {
+            //   socket.sendError('Authentication failed')
+            // } else if (data.event && moduleHolder[data.event]) {
+
+            if (data.event && moduleHolder[data.event]) {
               moduleHolder[data.event](socket, data)
             } else {
-              errorLog(`[WssAPI] error`.cyan,`Function not found: ${data.event}`)
+              errorLog(
+                `[WssAPI] error`.cyan,
+                `Function not found: ${data.event}`
+              )
               socket.sendError('Function not found')
             }
           }
@@ -71,17 +78,17 @@ module.exports = function (options) {
         devLog(`[WssAPI] onclose:`.cyan, code, reason.toString())
         delete webSocketServer.socketListByUuid[socket.id]
         purgeSocket(socket)
-        eventLog(`Total client:`, webSocketServer._server._connections)
+
+        eventLog(`Total client:`, webSocketServer.clients.size)
       })
 
       devLog('Connected', socket.ip, socket.id)
-      eventLog(`Total client:`, webSocketServer._server._connections)
+      eventLog(`Total client:`, webSocketServer.clients.size)
 
       webSocketServer.socketListByUuid[socket.id] = socket
     })
 
     eventLog(`[WssAPI]`.cyan, 'started')
-    // uyuyanlariGemidenAt()
     resolve()
   })
 }
@@ -98,29 +105,6 @@ global.purgeSocket = (socket) => {
   }
 }
 
-// throw the sleepers out of the boat
-
-// function uyuyanlariGemidenAt() {
-//   if (global.wss) {
-//     let gemidenAtildi = false
-//     global.wss.clients.forEach((socket) => {
-//       if (socket.isAlive === false) {
-//         purgeSocket(socket)
-//         gemidenAtildi = true
-//       } else {
-//         socket.isAlive = false
-//         socket.ping()
-//       }
-//     })
-
-//     gemidenAtildi && eventLog(`Total client:`, wss._server._connections)
-//   }
-
-//   setTimeout(() => {
-//     uyuyanlariGemidenAt()
-//   }, Number(process.env.WS_PING_INTERVAL || 5000))
-// }
-
 function sendError(socket, err, callback) {
   let error = 'Error'
   if (typeof err == 'string') {
@@ -130,68 +114,21 @@ function sendError(socket, err, callback) {
   }
 
   const obj = {
-    event: callback || 'error',
+    event: 'error', // qwerty  We will look back here again.
     success: false,
     error: error,
+    callback: callback ?? undefined,
   }
   devError(`[SendError]`.cyan, JSON.stringify(obj))
   socket.send(JSON.stringify(obj))
 }
 
-// function sendSuccess(socket, event, data, callback) {
-//     const obj = {
-//       event: event,
-//       success: true,
-//       data: data,
-//     }
-//     if (callback) {
-//       obj.callback = callback
-//     }
-//     socket.send(JSON.stringify(obj))
- 
-// }
-
-
 function sendSuccess(socket, event, data, callback) {
-
-  // if(event=='subscribed'){
-    const obj = {
-      event: event,
-      success: true,
-      data: data,
-    }
-    if (callback) {
-      obj.callback = callback
-    }
-    socket.send(JSON.stringify(obj), new Date().getTime())
-
-  // }else{
-    
-  //   devLog(`[SendSuccess] data.totalDocs before: ${data.totalDocs}`)
-  //   data.alitek='alitek79'
-  //   const obj = {
-  //     event: event,
-  //     success: true,
-  //     data: data,
-  //   }
-  //   if (callback) {
-  //     obj.callback = callback
-  //   }
-  //   devLog(`[SendSuccess] before stringify`)
-  //   // let msg=JSON.stringify(obj)
-    
-  //   // devLog(`[SendSuccess]:`,msg)
-    
-  //   // devLog(`[SendSuccess] after stringify, msg.length: ${msg.length}`)
-  //   // let lorem='loremipsum dolor sit amet, consect, sed do eiusmod tempor incididunt ut labore et, consectetur adipiscing elit, sed do eiusmod tempor inc'
-  //   // let msg2=msg.split('alitek79')[0] + lorem.repeat(10) + msg.split('alitek79')[1]
-
-  //   // devLog(`[SendSuccess] after stringify, before send msg2.length: ${msg2.length} , Size: , ${Math.round(msg2.length/1024/1024)} mb`)
-  //   // socket.send(msg2)
-  //   // devLog(`[SendSuccess] the end , ${event},  msg2 length: ${Math.round(msg2.length/1024/1024)} mb`)
-  //   socket.send(obj,new Date().getTime())
-  // }
- 
-
-  
+  const obj = {
+    event: event,
+    success: true,
+    data: data,
+    callback: callback ?? undefined,
+  }
+  socket.send(JSON.stringify(obj), new Date().getTime())
 }

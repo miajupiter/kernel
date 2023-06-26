@@ -14,15 +14,11 @@ module.exports = (app) => {
     next()
   })
 
-  let apiWelcomeMessage = {
-    message: [
-      `Welcome to ${packageJson.name} API V1.`,
-      `Usage: /api/v1/[auth | session | db | '']/:func/[:param1]/[:param2]/[:param3]`,
-      `Methods: GET, POST, PUT, DELETE.`,
-      `Documentation: ${process.env.RESTAPI_DOCUMENTATION_URI}`,
-    ].join('\n'),
+  const apiWelcomeMessage = {
+    message: process.env.RESTAPI_WELCOME,
     status: process.env.NODE_ENV || '',
   }
+
   app.all('/api', function (req, res) {
     res.status(200).json({ success: true, data: apiWelcomeMessage })
   })
@@ -31,21 +27,13 @@ module.exports = (app) => {
     res.status(200).json({ success: true, data: apiWelcomeMessage })
   })
 
-  authControllers(app, '/api/v1/auth/:func/:param1/:param2/:param3', 'auth')
-  sessionControllers(
-    app,
-    '/api/v1/session/:func/:param1/:param2/:param3',
-    'session'
-  )
-  repoControllers(app, '/api/v1/db/:func/:param1/:param2/:param3', 'repo')
-  masterControllers(app, '/api/v1/:func/:param1/:param2/:param3', 'master')
+  authControllers(app, '/api/v1/auth/:func/:param1/:param2/:param3')
+  sessionControllers(app, '/api/v1/session/:func/:param1/:param2/:param3')
+  repoControllers(app, '/api/v1/db/:func/:param1/:param2/:param3')
+  masterControllers(app, '/api/v1/:func/:param1/:param2/:param3')
 
-  // catch 404 and forward to error handler
   app.use((req, res, next) => {
-    res.status(404).json({
-      success: false,
-      error: 'Not found',
-    })
+    res.status(404).json({ success: false, error: 'Not found' })
   })
 
   app.use((err, req, res, next) => {
@@ -57,119 +45,122 @@ function authControllers(app, route) {
   setRoutes(app, route, (req, res, next) => {
     let spam = spamCheck(req.IP)
     if (!spam) {
-      let ctl = getController(folder, req.params.func)
-      if (!ctl) return next()
-      ctl(req)
-        .then((data) => {
-          if (data == undefined) res.json({ success: true })
-          else if (data == null) res.json({ success: true })
-          else {
-            res.status(200).json({
-              success: true,
-              data: manipulateResponse(data),
-            })
-          }
-        })
-        .catch(next)
-    } else {
-      next({
-        name: 'AUTH_FAILED',
-        message: `Suspicious login attempts detected. Try again after ${spam} seconds.`,
-      })
-    }
-  })
-}
-
-function sessionControllers(app, route, folder) {
-  setRoutes(app, route, (req, res, next) => {
-    if (app.controllers.session[req.params.func]) {
-    }
-    let ctl = getController(folder, req.params.func)
-    if (!ctl) return next()
-    passport(req)
-      .then((sessionDoc) => {
-        ctl(sessionDoc, req)
-          .then((data) => {
-            if (data == undefined) res.json({ success: true })
-            else if (data == null) res.json({ success: true })
-            else {
-              res.status(200).json({ success: true, data: data })
-            }
-          })
-          .catch(next)
-      })
-      .catch(next)
-  })
-}
-
-function repoControllers(app, route, folder) {
-  setRoutes(app, route, (req, res, next) => {
-    let ctl = getController(folder, req.params.func)
-    if (!ctl) return next()
-    passport(req)
-      .then((sessionDoc) => {
-        global
-          .getRepoDbModel(sessionDoc._id, sessionDoc.db, sessionDoc.dbHost)
-          .then((dbModel) => {
-            ctl(dbModel, sessionDoc, req)
-              .then((data) => {
-                if (data == undefined) res.json({ success: true })
-                else if (data == null) res.json({ success: true })
-                else {
-                  res
-                    .status(200)
-                    .json({ success: true, data: manipulateResponse(data) })
-                }
-              })
-              .catch(next)
-          })
-          .catch(next)
-      })
-      .catch(next)
-  })
-}
-
-function masterControllers(app, route, folder) {
-  setRoutes(app, route, (req, res, next) => {
-    const ctl = getController(folder, req.params.func)
-    if (!ctl) return next()
-    let dbModel = db
-
-    passport(req)
-      .then((member) => {
-        ctl(member, dbModel, req)
+      if (restControllers.auth[req.params.func]) {
+        restControllers.auth[req.params.func](req)
           .then((data) => {
             if (data == undefined) res.json({ success: true })
             else if (data == null) res.json({ success: true })
             else {
               res.status(200).json({
                 success: true,
-                data: manipulateResponse(data),
+                data: data,
               })
-              // res.status(200).json(manipulateResponse(data))
             }
           })
           .catch(next)
-      })
-      .catch((err) => {
-        res.status(401).json({ success: false, error: err })
-      })
+      } else next()
+    } else {
+      next(`Suspicious login attempts. Try again after ${spam} seconds.`)
+    }
   })
 }
 
-function getController(folder, funcName) {
-  let controllerName = path.join(
-    __dirname,
-    '/controllers',
-    folder,
-    `${funcName}.controller.js`
-  )
-  if (fs.existsSync(controllerName) == false) {
-    return null
-  } else {
-    return require(controllerName)
-  }
+function sessionControllers(app, route) {
+  setRoutes(app, route, (req, res, next) => {
+    if (restControllers.session[req.params.func]) {
+      passport(req)
+        .then((sessionDoc) => {
+          restControllers.session[req.params.func](db, sessionDoc, req)
+            .then((data) => {
+              if (data == undefined) res.json({ success: true })
+              else if (data == null) res.json({ success: true })
+              else {
+                res.status(200).json({ success: true, data: data })
+              }
+            })
+            .catch(next)
+        })
+        .catch(next)
+    } else next()
+  })
 }
+
+function repoControllers(app, route) {
+  setRoutes(app, route, (req, res, next) => {
+    if (restControllers.repo[req.params.func]) {
+      passport(req)
+        .then((sessionDoc) => {
+          sessionDoc
+            .populate('dbId')
+            .then((sessionDoc) => {
+              if (sessionDoc.dbId) {
+                getRepoDbModel(
+                  sessionDoc.member,
+                  sessionDoc.dbId.dbName,
+                  sessionDoc.dbId.dbServer
+                )
+                  .then((dbModel) => {
+                    console.log('dbModel.dbName:', dbModel.dbName)
+
+                    restControllers.repo[req.params.func](
+                      dbModel,
+                      sessionDoc,
+                      req
+                    )
+                      .then((data) => {
+                        if (data == undefined) res.json({ success: true })
+                        else if (data == null) res.json({ success: true })
+                        else {
+                          res.status(200).json({ success: true, data: data })
+                        }
+                      })
+                      .catch(next)
+                  })
+                  .catch(next)
+              } else next('Database not selected')
+            })
+            .catch(next)
+        })
+        .catch(next)
+    } else next()
+  })
+}
+
+function masterControllers(app, route) {
+  setRoutes(app, route, (req, res, next) => {
+    if (restControllers.master[req.params.func]) {
+      passport(req)
+        .then((sessionDoc) => {
+          restControllers.master[req.params.func](db, sessionDoc, req)
+            .then((data) => {
+              if (data == undefined) res.json({ success: true })
+              else if (data == null) res.json({ success: true })
+              else {
+                res.status(200).json({ success: true, data: data })
+              }
+            })
+            .catch(next)
+        })
+        .catch((err) => {
+          res.status(401).json({ success: false, error: err })
+        })
+    } else next()
+  })
+}
+
+// function getController(folder, funcName) {
+//   let controllerName = path.join(
+//     __dirname,
+//     '/controllers',
+//     folder,
+//     `${funcName}.controller.js`
+//   )
+//   if (fs.existsSync(controllerName) == false) {
+//     return null
+//   } else {
+//     return require(controllerName)
+//   }
+// }
 
 function sendError(err, req, res) {
   let errorMessage = 'Error'
@@ -216,7 +207,7 @@ function setRoutes(app, route, cb1, cb2) {
 
 function passport(req) {
   return new Promise((resolve, reject) => {
-    let token = req.getValue('token')
+    let token = req.headers.token || req.body.token || req.query.token
     if (token) {
       auth
         .verify(token)
@@ -226,7 +217,7 @@ function passport(req) {
             .then((sessionDoc) => {
               if (sessionDoc) {
                 if (sessionDoc.closed) {
-                  reject('The session has already been closed')
+                  reject('Session closed')
                 } else {
                   sessionDoc.lastOnline = new Date()
                   sessionDoc.lastIP = req.IP
@@ -240,31 +231,9 @@ function passport(req) {
         })
         .catch(reject)
     } else {
-      reject('Token required')
+      reject('Authentication failed. Access token required')
     }
   })
-}
-
-function manipulateResponse(obj) {
-  // if (obj != undefined) {
-  // 	if (obj.pagingCounter != undefined) delete obj.pagingCounter
-
-  // 	if (obj.limit != undefined) {
-  // 		obj.pageSize = obj.limit
-  // 		delete obj.limit
-  // 	}
-  // 	if (obj.totalDocs != undefined) {
-  // 		obj.recordCount = obj.totalDocs
-  // 		// obj.totalCount = obj.totalDocs
-  // 		delete obj.totalDocs
-  // 	}
-  // 	if (obj.totalPages != undefined) {
-  // 		obj.pageCount = obj.totalPages
-  // 		delete obj.totalPages
-  // 	}
-
-  // }
-  return obj
 }
 
 global.restError = {

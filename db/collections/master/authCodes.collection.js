@@ -1,5 +1,6 @@
+const collectionName = path.basename(__filename, '.collection.js')
+
 module.exports = function (dbModel) {
-	let collectionName = path.basename(__filename, '.collection.js')
 	let schema = mongoose.Schema(
 		{
 			username: { type: String, required: true, index: true },

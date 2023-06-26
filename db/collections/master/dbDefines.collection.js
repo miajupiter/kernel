@@ -1,6 +1,8 @@
-const { permissionSchemaType } = require('../db-types')
+const { permissionSchemaType } = require('../../helpers/db-types')
+const collectionName = path.basename(__filename, '.collection.js')
+
 module.exports = function (dbModel) {
-	let collectionName = path.basename(__filename, '.collection.js')
+	
 	let schema = mongoose.Schema(
 		{
 			owner: {
@@ -21,8 +23,8 @@ module.exports = function (dbModel) {
 				},
 			],
 			displayName: { type: String, default: '', index: true },
-			namespace: { type: String, default: '', index: true },
-			server: { type: String, default: '', index: true },
+			dbName: { type: String, default: '', index: true },
+			dbServer: { type: String, default: '', index: true },
 			stats: {},
 			version: { type: String, default: '', index: true },
 			deleted: { type: Boolean, default: false, index: true },

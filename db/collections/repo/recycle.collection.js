@@ -1,5 +1,5 @@
+const collectionName = path.basename(__filename, '.collection.js')
 module.exports = function (dbModel) {
-  let collectionName = path.basename(__filename, '.collection.js')
   let schema = mongoose.Schema(
     {
       collectionName: { type: String, default: '', index: true },
@@ -9,7 +9,6 @@ module.exports = function (dbModel) {
         index: true,
       },
       document: { type: Object, default: null },
-      // deletedBy: { type: String, required: true, default: '', index: true },
       deletedBy: { type: String, default: '', index: true },
       deletedById: {
         type: mongoose.Schema.Types.ObjectId,
@@ -31,6 +30,5 @@ module.exports = function (dbModel) {
   schema.plugin(mongoosePaginate)
 
   let model = dbModel.conn.model(collectionName, schema, collectionName)
-
   return model
 }

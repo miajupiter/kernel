@@ -1,10 +1,15 @@
 module.exports = (dbModel, sessionDoc, req) =>
   new Promise(async (resolve, reject) => {
-    switch (req.method.toUpperCase()) {
+    // console.log('dataLog.controller.js: ', dbModel.dbName)
+    console.log('dataLog  req.params:', req.params)
+    console.log('dataLog  req.query:', req.query)
+    // console.log('dataLog  sessionDoc:', sessionDoc)
+    switch (req.method) {
       case 'GET':
         if (req.params.param1 != undefined) {
           getOne(dbModel, sessionDoc, req).then(resolve).catch(reject)
         } else {
+          console.log('buraya geldi1')
           getList(dbModel, sessionDoc, req).then(resolve).catch(reject)
         }
         break
@@ -34,19 +39,11 @@ function getOne(dbModel, sessionDoc, req) {
 }
 
 function getList(dbModel, sessionDoc, req) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     let options = {
-      page: req.query.page || (req.query.pageIndex || 0) + 1,
-      // populate: [
-      //   {
-      //     path: 'machine',
-      //     select: '_id name',
-      //   },
-      // ],
+      page: req.query.page ||  1,
+      limit: req.query.pageSize ||  10,
     }
-
-    if (req.query.pageSize || req.query.limit)
-      options.limit = req.query.pageSize || req.query.limit
 
     let filter = {}
     if ((req.query.transferred || '') != '') {
@@ -56,7 +53,9 @@ function getList(dbModel, sessionDoc, req) {
     if ((req.query.machine || '') != '') {
       filter.machine = req.query.machine
     }
-
+    console.log('buraya geldi')
+    let deneme=await dbModel.dataLog.find()
+    console.log(deneme)
     dbModel.dataLog.paginate(filter, options).then(resolve).catch(reject)
   })
 }

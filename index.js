@@ -5,12 +5,10 @@
 	global.path = require('path')
 	global.fs = require('fs')
 	global.__root = __dirname
-	// global.config = require('./lib/config-helper')
 	global.util = require('./lib/util')
 	showAppInfo()
-	// await require('./lib/initialize')()
 
-	await require('./db/db-loader')()
+	await require('./db')()
 	var app = await require('./rest/rest')()
 	var httpServer = await require('./lib/http-server')(
 		process.env.HTTP_PORT,
@@ -19,11 +17,13 @@
 
 	await require('./wss-api/wss-api')(httpServer)
 	
-	eventLog(`Application was started properly :-)`.yellow)
-	if (process.env.NODE_ENV == 'development') {
-		eventLog(`http://localhost:${process.env.HTTP_PORT}`)
-		// test()
-	}
+
+	setTimeout(()=>{
+		eventLog(`Application was started properly :-)`.yellow)
+		process.env.NODE_ENV == 'development' && console.log(`\nhttp://localhost:${process.env.HTTP_PORT}\n`)
+
+	},1000)
+	
 
 	process.env.NODE_ENV != 'development' &&
 		process.on('uncaughtException', (err) => {

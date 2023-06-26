@@ -1,6 +1,6 @@
-const { permissionSchemaType } = require('../db-types')
+const { permissionSchemaType } = require('../../helpers/db-types')
+const collectionName = path.basename(__filename, '.collection.js')
 module.exports = function (dbModel) {
-  let collectionName = path.basename(__filename, '.collection.js')
   let schema = mongoose.Schema(
     {
       member: { type: ObjectId, ref: 'members', default: null, index: true },

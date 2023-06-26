@@ -1,6 +1,5 @@
-const { permissionType } = require('../../../db/db-types')
+const { permissionType } = require('../../../db/helpers/db-types')
 const auth = require('../../../lib/auth')
-// const uuid = require('uuid')
 module.exports = (req) =>
 	new Promise((resolve, reject) => {
 		if (req.method == 'POST') {

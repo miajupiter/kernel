@@ -56,7 +56,6 @@ exports.newUserDb = function (
 					newDatabase
 						.save()
 						.then((newDoc) => {
-							console.log(`newUserDb newDoc`, newDoc)
 							resolve(newDoc)
 						})
 						.catch(reject)

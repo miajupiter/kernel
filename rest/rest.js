@@ -24,13 +24,13 @@ module.exports = () => new Promise(async (resolve, reject) => {
 
   app.use('/', express.static(path.join(__root, 'public')))
 
-  app.controllers={
+  global.restControllers={
     auth: await util.moduleLoader(path.join(__dirname, '/controllers/auth'), '.controller.js'),
     master: await util.moduleLoader(path.join(__dirname, '/controllers/master'), '.controller.js'),
     repo:await util.moduleLoader(path.join(__dirname, '/controllers/repo'), '.controller.js'),
     session:await util.moduleLoader(path.join(__dirname, '/controllers/session'), '.controller.js'),
   }
-
+  
   require('./routes')(app)
   resolve(app)
   eventLog(`[RestAPI]`.cyan, 'started')

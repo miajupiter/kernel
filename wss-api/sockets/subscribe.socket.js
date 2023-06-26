@@ -1,7 +1,6 @@
+const controllerName = path.basename(__filename, '.socket.js')
 const auth = require('../../lib/auth')
-
 module.exports = (socket, data) => {
-  devLog('subscribe.socket :', data)
   auth
     .verify(data.token || '')
     .then((decoded) => {
@@ -10,7 +9,7 @@ module.exports = (socket, data) => {
         .then((sessionDoc) => {
           if (dbNull(sessionDoc, socket.sendError)) {
             if (sessionDoc.closed) {
-              socket.sendError('Session closed')
+              socket.sendError('Session closed', data)
             } else {
               sessionDoc.lastOnline = new Date()
               sessionDoc.lastIP = socket.ip

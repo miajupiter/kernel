@@ -37,64 +37,75 @@
 		</div>
 		
 		<div class="row">
-			<div class="col-md-6">
-				<div class="mb-3">
+			<div class="col-md-4">
 					<label for="socketService" class="form-label text-light">Soket</label>
 					<input class="form-control" id="socketService" type="text" placeholder="socketService" aria-label="" value="">
-				</div>
 			</div>
 		
-			<div class="col-md-12">
-				<div class="mb-3">
-					<a href="javascript:setsocketService()" class="btn btn-success">Set Socket Servis</a>
-					<a href="javascript:startSocket()" class="btn btn-primary">startSocket</a>
-					
-				</div>
+			<div class="col-md-8 pt-4">
+				<!-- <div class="d-flex justify-content-start align-items-bottom"> -->
+				<a href="javascript:startSocket()" class="btn btn-primary">Connect</a>
+				<a href="javascript:subscribe()" class="btn btn-success ms-4">Subscribe</a>
+				<a href="javascript:closeConnection()" class="btn btn-light ms-4">Disconnect</a>
+				<!-- </div> -->
 			</div>
-
 			
 		</div>
-		<div class="row">
-			<div class="col-md-4">
-				<input class="form-control" id="txtMongoId" type="text" placeholder="mongodb object id" aria-label="" value="64811304144714c221b52c4d">
-			</div>
-			<div class="col">
-				<a href="javascript:newId()" class="btn btn-primary">newId</a>
-			</div>
-		</div>
+		
 		<div class="card bg-dark text-light border mt-3">
 			<div class="card-header bg-primary text-light d-flex justify-content-between align-items-center">
 				<h3>Kernel WebSocket Testing</h3>
-				<a class=" btn-collapse collapsed fs-125" data-bs-toggle="collapse" href="#card-stats" role="button" aria-expanded="false" aria-controls="card-stats">
-					<i class="fas fa-caret-up text-light"></i>
-				</a>
+				<div class="d-flex justify-content-between align-items-top" >
+					<a href="javascript:saveFormParams()" class="btn btn-primary me-3 " style="font-size: 16px;padding:2px;"><i class="fas fa-save"></i> Kaydet</a>
+					<a class=" btn-collapse collapsed fs-125" data-bs-toggle="collapse" href="#card-stats" role="button" aria-expanded="false" aria-controls="card-stats">
+						<i class="fas fa-caret-up text-light"></i>
+					</a>
+				</div>
+				
 			</div>
 			<div id="card-stats" class="card-body card-collapse collapse">
 				<div class="row">
-					<div class="col-md-6">
+					<div class="col-md-3">
 						<div class="mb-3">
-							<label for="event-name" class="form-label">Socket Event</label>
+							<label for="event-name" class="form-label">Event</label>
 							<input class="form-control" id="event-name" type="text" placeholder="socket event" aria-label="">
 						</div>
 					</div>
-				</div>
-				<div class="row">
-					<div class="col">
-						<div class="mb-3 w-50">
-							<label for="event-params" class="form-label">Options</label>
-							<textarea class="form-control" id="event-params" rows="6" aria-label="" onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+' '.repeat(4) +v.substring(e);this.selectionStart=this.selectionEnd=s+4;return false;}"></textarea>
+					<div class="col-md-2">
+						<div class="mb-3">
+							<label for="event-method" class="form-label">Method</label>
+							<select class="form-control" id="event-method">
+								<option value="GET">GET</option>
+								<option value="POST">POST</option>
+								<option value="PUT">PUT</option>
+								<option value="DELETE">DELETE</option>
+							</select>
 						</div>
-						<div class="mb-3 w-100">
-							<a href="javascript:socketSend()" class="btn btn-primary">socket.send</a>
-					<a href="javascript:durdur()" class="btn btn-light ms-4">Stop</a>
-							
+					</div>
+					<div class="col">
+						<div class="mb-3">
+							<label for="event-path" class="form-label">Path</label>
+							<input class="form-control" id="event-path" type="text" placeholder="/api/v1/[auth | session | db | '']/:func/:param1/:param2/:param3" aria-label="">
 						</div>
 					</div>
 				</div>
 				
-				<div class="card-footer">
+				<div class="row">
+					<div class="col-md-5">
+						<label for="event-query" class="form-label">Query</label>
+						<textarea class="form-control" id="event-query" rows="10" aria-label="" onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+' '.repeat(4) +v.substring(e);this.selectionStart=this.selectionEnd=s+4;return false;}"></textarea>
+					</div>
+					<div class="col-md-7">
+						<label for="event-data" class="form-label">Data/Body</label>
+						<textarea class="form-control" id="event-data" rows="10" aria-label="" onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+' '.repeat(4) +v.substring(e);this.selectionStart=this.selectionEnd=s+4;return false;}"></textarea>
+					</div>
+				</div>
+				<div class="px-2 my-3">
+					<a href="javascript:socketSend()" class="btn btn-primary w-25">Send</a>
+				</div>
+				<div class="w-100 px-2">
 					<label for="result" class="form-label">Result</label>
-							<textarea class="form-control" id="result" rows="12" aria-label=""></textarea>
+					<textarea class="form-control" id="result" rows="12" aria-label=""></textarea>
 				</div>
 			</div>
 
@@ -105,7 +116,7 @@
 		<script src="js/script.js"></script>
 		<script type="text/javascript">
 
-			var accessToken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NDhhYTkwZGY4NGEyMjRmYTAwM2NlYmYiLCJpYXQiOjE2ODY4MDg4NDUsImV4cCI6MTc3MzIwODg0NX0.o1pruKwH0Cnlhj0t_mGlleIjNBYTRWzUVouo_Vtoagg'
+			// var accessToken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NDhmZTJkY2E0YWM2MDZkMWUwMzE3NGMiLCJpYXQiOjE2ODcxNTEzMjQsImV4cCI6MTc3MzU1MTMyNH0.Npj8-P32D9OFoK6GfZ8StcBQgb85WZhcSX0UL4_u6eo'
 
 			function UUIDGeneratorBrowser(){
   			return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>{
@@ -113,59 +124,77 @@
 				})
 			}
 
-			function setsocketService(){
+			function saveFormParams(){
 				
 				localStorage.setItem('socketService',$('#socketService').val().trim() || 'ws://localhost:7701')
-				localStorage.setItem('event-name',$('#event-name').val() || 'dataLog')
-				localStorage.setItem('event-params',$('#event-params').val())
+				localStorage.setItem('event-name',$('#event-name').val() || 'db')
+				localStorage.setItem('event-method',$('#event-method').val() || 'GET')
+				localStorage.setItem('event-data',$('#event-data').val())
+				localStorage.setItem('event-path',$('#event-path').val())
+				localStorage.setItem('event-query',$('#event-query').val())
 				//window.location.reload()
 			}
 			var socket=null
-
+			var callbackList={}
+			
 			function startSocket(){
 				const socketService=$('#socketService').val()
 				
 
-				socket = new WebSocket(`${socketService}`, 'echo-protocol')
+				// socket = new WebSocket(`${socketService}`, 'echo-protocol')
+				socket = new WebSocket(`${socketService}`)
 				
 
 				socket.onerror = function(err) {
 						console.log('Connection Error', err)
+						socket.close()
 				}
 
 				socket.onopen = function() {
 						console.log('WebSocket Client Connected')
-						socket.send(JSON.stringify({ event: 'subscribe', token:accessToken }))
+						
 				}
 
-				socket.onclose = function() {
-						console.log('echo-protocol Client Closed')
+
+				socket.onclose = function(code,reason) {
+						console.log('Client Closed code,reason:', code,reason)
+						setTimeout(()=>startSocket(),1000)
 				}
 
 				socket.onmessage = function(rawData,ts) {
 					if (rawData) {
-						console.log('ts: ',ts)
-							try {
-								let data = JSON.parse(rawData.data.toString())
-								if (data.event=='subscribed') {
-									runSubscribed(data)
-								}else if (data.event=='dataLog') {
-									console.log('EndTime: ', new Date().toISOString().replace(/T/g, ' ').split('.')[0])
-									$('#result').val(`${JSON.stringify(data,null,2)}`)
-									
-								}else{
-									console.log('onmessage data: ', data)
-								}
-							} catch (err) {
+						try {
+							let data = JSON.parse(rawData.data.toString())
+							if (data.event=='subscribed') {
+								runSubscribed(data)
+							}else if (data.event=='dataLog') {
 								console.log('EndTime: ', new Date().toISOString().replace(/T/g, ' ').split('.')[0])
-								console.log('error onmessage', err)
+								$('#result').val(`${JSON.stringify(data,null,2)}`)
+								
+							}else{
+								$('#result').val(`${JSON.stringify(data,null,2)}`)
+								console.log('onmessage data: ', data)
 							}
+						} catch (err) {
+							console.log('EndTime: ', new Date().toISOString().replace(/T/g, ' ').split('.')[0])
+							console.log('error onmessage', err)
+						}
 					}
 				}
 
 			}
 			
+
+			function subscribe() {
+				if(socket && socket.readyState ==1){
+					socket.send(JSON.stringify({ event: 'subscribe', token:localStorage.getItem('token') }))
+				}else{
+					$('#result').val('socket is not connected')
+				}
+			}
+
 			function runSubscribed(data) {
+				$('#result').val(`Subscribed: ${data.data.message}`)
 				console.log('runSubscribed', data)
 			}
 
@@ -177,18 +206,24 @@
 				console.log('StartTime: ', new Date().toISOString().replace(/T/g, ' ').split('.')[0])
 				try{
 					const callback = $('#event-name').val() + `-${UUIDGeneratorBrowser()}`
-					let params=JSON.parse($('#event-params').val())
-					params.event=$('#event-name').val()
-					params.callback=callback
+					const packet={
+						event:$('#event-name').val(),
+						method:$('#event-method').val(),
+						path:$('#event-path').val(),
+						query:JSON.parse($('#event-query').val()),
+						data:JSON.parse($('#event-data').val()),
+						callback:callback,
+
+					}
 					
-					socket.send(JSON.stringify(params))
+					socket.send(JSON.stringify(packet))
 				}catch (err) {
 					console.log('socketSend error:', err)
 				}
 				
 			}
 
-			async function durdur() {
+			async function closeConnection() {
 				if(socket){
 					await socket.close(3500,'deneme closing')
 				}else{
@@ -204,70 +239,22 @@
 				$('#socketService').val(localStorage.getItem('socketService'))
 				
 
-				if (localStorage.getItem('event-name')) {
-					$('#event-name').val(localStorage.getItem('event-name'))
-				}
+				$('#event-name').val(localStorage.getItem('event-name') || 'db')
+				$('#event-method').val(localStorage.getItem('event-method') || 'GET')
+				$('#event-path').val(localStorage.getItem('event-path') || '')
+				$('#event-query').val(localStorage.getItem('event-query') || JSON.stringify({
+					page: 1,
+					pageSize:10,
+					transferred:false,
+				},null,2))
 
-				if (localStorage.getItem('event-params')) {
-					$('#event-params').val(localStorage.getItem('event-params'))
-				} else {
-					let defaultOpt = {
-						page: 1,
-						pageSize:10,
-						filter:{transferred:false},
-						data:null,
-					}
-					$('#event-params').val(JSON.stringify(defaultOpt, null, 4))
-				}
+				$('#event-data').val(localStorage.getItem('event-data') || JSON.stringify({				
+				},null,2))
+
+				
 			})
 
-			const zzNumbers='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-~'
-			const basamak0=1
-			const basamak1=64
-			const basamak2=64*64
-			const basamak3=64*64*64
-			// for(let i=65;i<=90;i++) {
-			// 	zzNumbers += String.fromCharCode(i)
-			// }
-			// for(let i=97;i<=122;i++) {
-			// 	zzNumbers += String.fromCharCode(i)
-			// }
-
-			// console.log(zzNumbers.length)
-
-			function newId(){
-				let s=$('#txtMongoId').val()
-				if(s.length !=24) return
-
-				let mongoId=[
-					`0x${s.substring(0,6)}`,
-					`0x${s.substring(6,12)}`,
-					`0x${s.substring(12,18)}`,
-					`0x${s.substring(18,24)}`,
-				]
-				let zzgoId=[]
-				console.log(mongoId)
-
-				mongoId.forEach(e=>{
-					let a=Number(e)
-					let zz3=0, zz2=0, zz1=0, zz0=0
-					zz3=Math.floor(a/basamak3)
-					a=a-zz3*basamak3
-
-					zz2=Math.floor(a/basamak2)
-					a=a-zz2*basamak2
-
-					zz1=Math.floor(a/basamak1)
-
-					a=a-zz1*basamak1
-
-					zz0=Math.floor(a/basamak0)
-
-					zzgoId.push(`${zzNumbers[zz3]}${zzNumbers[zz2]}${zzNumbers[zz1]}${zzNumbers[zz0]}`)
-				})
-				console.log(`zzgoId:`,zzgoId)
-				
-			}
+			
 		</script>
 
 </body>
